@@ -26,4 +26,9 @@ public class SharedPrefsManager {
         editor.clear();
         editor.apply();
     }
+
+    public void removeData(String key) {
+        editor.remove(key);
+        editor.apply();
+    }
 }

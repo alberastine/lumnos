@@ -34,6 +34,14 @@ public class LoginActivity extends AppCompatActivity {
 
         prefsManager = new SharedPrefsManager(this);
 
+        // Check if user is already logged in
+        String isLoggedIn = prefsManager.getData("is_logged_in");
+        if ("true".equals(isLoggedIn)) {
+            startActivity(new Intent(this, DashboardActivity.class));
+            finish();
+            return;
+        }
+
         // **MODIFIED:** Set up the default admin user within a user list
         setupDefaultUser();
 
@@ -65,7 +73,6 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // **MODIFIED:** Login logic now checks a list of users
         String usersJson = prefsManager.getData("users_list");
         Type type = new TypeToken<ArrayList<UserModel>>(){}.getType();
         List<UserModel> users = JsonUtils.fromJson(usersJson, type);
@@ -75,6 +82,11 @@ public class LoginActivity extends AppCompatActivity {
             for (UserModel user : users) {
                 if (user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)) {
                     loggedIn = true;
+
+                    // ✅ Save session info
+                    prefsManager.saveData("logged_in_user", user.getUsername());
+                    prefsManager.saveData("is_logged_in", "true");
+
                     break;
                 }
             }
