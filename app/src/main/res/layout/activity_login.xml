@@ -7,23 +7,31 @@
     android:gravity="center"
     android:background="@color/light_blue">
 
-    <!-- Logo circle -->
-    <LinearLayout
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:background="@color/blue_600"
-        android:gravity="center"
-        android:orientation="vertical"
+    <!-- Logo -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginBottom="16dp"
-        android:clipToOutline="true"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/blue_600"
         android:layout_gravity="center">
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_library_book"
-            app:tint="@color/white"/>
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_library_book"
+                app:tint="@color/white" />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
 
     <!-- App Title -->
     <TextView
