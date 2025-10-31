@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.InputType;
+import android.view.View;
 import android.widget.EditText;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.lumnos.R;
 import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.assessment.AddAssessmentActivity;
 import com.example.lumnos.adapter.AssessmentAdapter;
@@ -44,12 +46,22 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         binding = ActivityClassroomDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
         classroomId = getIntent().getStringExtra("CLASSROOM_ID");
         classroomName = getIntent().getStringExtra("CLASSROOM_NAME");
 
         setSupportActionBar(binding.toolbar);
-        getSupportActionBar().setTitle(classroomName);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        binding.toolbar.getNavigationIcon()
+                .setTint(getResources().getColor(R.color.black));
+
+        binding.tvToolbarTitle.setText(classroomName);
 
         prefsManager = new SharedPrefsManager(this);
         studentManager = new StudentManager(this, classroomId);
@@ -89,6 +101,17 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         studentList.clear();
         studentList.addAll(studentManager.getStudents());
         studentAdapter.notifyDataSetChanged();
+
+        if (studentList.isEmpty()) {
+            binding.tvNoStudentsImg.setVisibility(View.VISIBLE);
+            binding.tvNoStudents.setVisibility(View.VISIBLE);
+            binding.rvStudents.setVisibility(View.GONE);
+        } else {
+            binding.tvNoStudentsImg.setVisibility(View.GONE);
+            binding.tvNoStudents.setVisibility(View.GONE);
+            binding.rvStudents.setVisibility(View.VISIBLE);
+        }
+        updateToolbarSubtitle();
     }
 
     private void loadAssessments() {
@@ -97,12 +120,32 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         Type type = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
         List<AssessmentModel> loadedAssessments = JsonUtils.fromJson(json, type);
 
+        assessmentList.clear();
         if (loadedAssessments != null) {
-            assessmentList.clear();
             assessmentList.addAll(loadedAssessments);
-            assessmentAdapter.notifyDataSetChanged();
         }
+        assessmentAdapter.notifyDataSetChanged();
+
+        if (assessmentList.isEmpty()) {
+            binding.tvNoAssessmentsImg.setVisibility(View.VISIBLE);
+            binding.tvNoAssessments.setVisibility(View.VISIBLE);
+            binding.rvAssessments.setVisibility(View.GONE);
+        } else {
+            binding.tvNoAssessmentsImg.setVisibility(View.GONE);
+            binding.tvNoAssessments.setVisibility(View.GONE);
+            binding.rvAssessments.setVisibility(View.VISIBLE);
+        }
+        updateToolbarSubtitle();
     }
+
+    private void updateToolbarSubtitle() {
+        int studentCount = studentList.size();
+        int assessmentCount = assessmentList.size();
+
+        binding.tvStudentsCount.setText(studentCount + (studentCount == 1 ? " student" : " students"));
+        binding.tvAssessmentsCount.setText(assessmentCount + (assessmentCount == 1 ? " assessment" : " assessments"));
+    }
+
 
     private void showAddStudentDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
