@@ -2,8 +2,11 @@ package com.example.lumnos.classroom;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.lumnos.R;
 import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.data.SharedPrefsManager;
 import com.example.lumnos.databinding.ActivityAddClassroomBinding;
@@ -24,8 +27,16 @@ public class AddClassroomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAddClassroomBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Set back button color to black
+        binding.toolbar.getNavigationIcon()
+                .setTint(getResources().getColor(R.color.black));
 
         prefsManager = new SharedPrefsManager(this);
 
