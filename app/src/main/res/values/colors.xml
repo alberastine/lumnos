@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary colors -->
+    <color name="blue_50">#EFF6FF</color>
+    <color name="blue_600">#2563EB</color>
+    <color name="light_blue">#e6eefe</color>
+
+    <color name="indigo_100">#E8EAF6</color>
+
+    <!-- Text colors -->
+    <color name="gray_900">#111827</color>
+    <color name="gray_600">#4B5563</color>
+</resources>
