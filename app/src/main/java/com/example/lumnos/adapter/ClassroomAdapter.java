@@ -52,7 +52,11 @@ public class ClassroomAdapter extends RecyclerView.Adapter<ClassroomAdapter.Clas
 
         public void bind(final ClassroomModel classroom, final OnClassroomClickListener listener) {
             binding.tvClassroomName.setText(classroom.getName());
+            binding.tvStudentsCount.setText(classroom.getStudentCount() + " students");
+            binding.tvAssessmentsCount.setText(classroom.getAssessmentCount() + " assessments");
+
             itemView.setOnClickListener(v -> listener.onClassroomClick(classroom));
         }
+
     }
 }

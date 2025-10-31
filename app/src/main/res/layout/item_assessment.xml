@@ -12,6 +12,7 @@
         android:id="@+id/tvAssessmentName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
         android:text="Assessment Name"
         android:textAppearance="?attr/textAppearanceBodyLarge"/>
 
@@ -19,6 +20,7 @@
         android:id="@+id/tvAssessmentType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
         android:text="Type"
         android:textAppearance="?attr/textAppearanceBodySmall"/>
 </LinearLayout>

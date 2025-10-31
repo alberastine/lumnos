@@ -61,7 +61,8 @@ public class AddClassroomActivity extends AppCompatActivity {
 
         String classroomId = UUID.randomUUID().toString();
         long timestamp = System.currentTimeMillis();
-        ClassroomModel newClassroom = new ClassroomModel(classroomId, classroomName, timestamp);
+
+        ClassroomModel newClassroom = new ClassroomModel(classroomId, classroomName, timestamp, 0, 0);
 
         classrooms.add(newClassroom);
 

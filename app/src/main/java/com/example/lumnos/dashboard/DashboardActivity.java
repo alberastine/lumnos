@@ -17,8 +17,10 @@ import com.example.lumnos.auth.LoginActivity;
 import com.example.lumnos.adapter.ClassroomAdapter;
 import com.example.lumnos.classroom.AddClassroomActivity;
 import com.example.lumnos.classroom.ClassroomDashboardActivity;
+import com.example.lumnos.classroom.StudentManager;
 import com.example.lumnos.data.SharedPrefsManager;
 import com.example.lumnos.databinding.ActivityDashboardBinding;
+import com.example.lumnos.models.AssessmentModel;
 import com.example.lumnos.models.ClassroomModel;
 import com.example.lumnos.utils.JsonUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -73,11 +75,22 @@ public class DashboardActivity extends AppCompatActivity {
             prefsManager.saveData("classrooms", "[]");
             json = "[]";
         }
+
         Type type = new TypeToken<ArrayList<ClassroomModel>>(){}.getType();
         List<ClassroomModel> loadedClassrooms = JsonUtils.fromJson(json, type);
 
         if (loadedClassrooms != null) {
             classroomList.clear();
+
+            // ✅ Update counts for each classroom before showing
+            for (ClassroomModel classroom : loadedClassrooms) {
+                int studentCount = getStudentCount(classroom.getId());
+                int assessmentCount = getAssessmentCount(classroom.getId());
+
+                classroom.setStudentCount(studentCount);
+                classroom.setAssessmentCount(assessmentCount);
+            }
+
             classroomList.addAll(loadedClassrooms);
             adapter.notifyDataSetChanged();
         }
@@ -90,7 +103,20 @@ public class DashboardActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // ✅ Add logout menu
+    private int getStudentCount(String classroomId) {
+        StudentManager studentManager = new StudentManager(this, classroomId);
+        return studentManager.getStudents().size();
+    }
+
+    private int getAssessmentCount(String classroomId) {
+        String key = "assessments_" + classroomId;
+        String json = prefsManager.getData(key);
+        Type type = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
+        List<AssessmentModel> assessments = JsonUtils.fromJson(json, type);
+        return (assessments != null) ? assessments.size() : 0;
+    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
