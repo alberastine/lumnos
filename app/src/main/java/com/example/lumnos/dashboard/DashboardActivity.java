@@ -2,9 +2,13 @@ package com.example.lumnos.dashboard;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.lumnos.R;
 import com.example.lumnos.adapter.ClassroomAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.classroom.AddClassroomActivity;
@@ -32,6 +36,9 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
 
+        getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
         prefsManager = new SharedPrefsManager(this);
 
         binding.fabAddClassroom.setOnClickListener(v -> {
@@ -45,6 +52,32 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadClassrooms();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_items, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(android.view.MenuItem item) {
+        if (item.getItemId() == R.id.action_logout) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Logout")
+                    .setMessage("Are you sure you want to logout?")
+                    .setPositiveButton("Logout", (dialog, which) -> {
+                        prefsManager.clearData();
+                        Intent intent = new Intent(this, com.example.lumnos.auth.LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void setupRecyclerView() {
