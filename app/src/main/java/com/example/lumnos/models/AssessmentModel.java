@@ -13,6 +13,7 @@ public class AssessmentModel implements Serializable {
     private String name;
     private Format format;
     private long createdAt;
+    private String classroomName;
 
     public AssessmentModel(String id, String classroomId, AssessmentType type, String name, Format format, long createdAt) {
         this.id = id;
@@ -25,10 +26,23 @@ public class AssessmentModel implements Serializable {
 
     // Getters
     public String getId() { return id; }
+
     public String getClassroomId() { return classroomId; }
+
     public AssessmentType getType() { return type; }
+
     public String getName() { return name; }
+
     public Format getFormat() { return format; }
+
+    public String getClassroomName() {
+        return classroomName;
+    }
+
+    public void setClassroomName(String classroomName) {
+        this.classroomName = classroomName;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

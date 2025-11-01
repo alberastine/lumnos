@@ -17,11 +17,21 @@ public class StudentManager {
     private final SharedPrefsManager prefsManager;
     private final String classroomId;
     private final String STUDENTS_KEY;
+    private final String CLASSROOM_NAME_KEY;
 
     public StudentManager(Context context, String classroomId) {
         this.prefsManager = new SharedPrefsManager(context);
         this.classroomId = classroomId;
         this.STUDENTS_KEY = "students_" + classroomId;
+        this.CLASSROOM_NAME_KEY = "classroom_name_" + classroomId;
+    }
+
+    public void setClassroomName(String name) {
+        prefsManager.saveData(CLASSROOM_NAME_KEY, name);
+    }
+
+    public String getClassroomName() {
+        return prefsManager.getData(CLASSROOM_NAME_KEY);
     }
 
     public List<StudentModel> getStudents() {
