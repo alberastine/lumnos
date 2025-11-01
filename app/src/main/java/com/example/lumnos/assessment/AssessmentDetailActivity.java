@@ -1,10 +1,12 @@
 package com.example.lumnos.assessment;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.lumnos.R;
 import com.example.lumnos.adapter.AssessmentResultsAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.classroom.StudentManager;
@@ -37,6 +39,10 @@ public class AssessmentDetailActivity extends AppCompatActivity {
         binding = ActivityAssessmentDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
+
         assessment = (AssessmentModel) getIntent().getSerializableExtra("ASSESSMENT_OBJECT");
         prefsManager = new SharedPrefsManager(this);
         studentManager = new StudentManager(this, assessment.getClassroomId());
@@ -46,6 +52,15 @@ public class AssessmentDetailActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        binding.toolbar.getNavigationIcon()
+                .setTint(getResources().getColor(R.color.black));
 
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setTitle(assessment.getName());

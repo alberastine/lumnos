@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:padding="16dp">
@@ -11,15 +12,20 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:textColor="@color/black"
         android:text="Student Name"
         android:textAppearance="?attr/textAppearanceBodyLarge"/>
 
-    <CheckBox
+    <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/cbPassed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Passed"/>
+        android:text="Submitted"
+        android:textColor="@color/black"
+        app:checkMarkTint="@color/white"
+        app:buttonTint="@color/checkbox_tint"/>
+
 
     <EditText
         android:id="@+id/etScore"
@@ -27,5 +33,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:inputType="numberDecimal"
+        android:textColor="@color/black"
         android:hint="Score"/>
 </LinearLayout>
