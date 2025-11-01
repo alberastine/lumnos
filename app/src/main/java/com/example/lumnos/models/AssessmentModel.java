@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 public class AssessmentModel implements Serializable {
     public enum Format { CHECKBOX, SCORE, BOTH }
-    public enum AssessmentType { ACTIVITY, ASSIGNMENT, RECITATION, EXAM, PROJECT }
+    public enum AssessmentType { ACTIVITY, ASSIGNMENT, RECITATION, EXAM, PROJECT, QUIZ, PERFORMANCE_TASK }
 
     private String id;
     private String classroomId;

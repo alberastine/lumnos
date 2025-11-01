@@ -10,8 +10,8 @@ android {
         applicationId "com.example.lumnos"
         minSdk 24
         targetSdk 36
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,6 +29,14 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def appName = "Lumnos"
+            def versionName = variant.versionName
+            outputFileName = "${appName}-v${versionName}.apk"
+        }
     }
 }
 
