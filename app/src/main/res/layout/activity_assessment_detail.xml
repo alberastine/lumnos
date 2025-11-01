@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:paddingHorizontal="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnConvertToPdf"
@@ -49,20 +49,30 @@
             android:layout_marginEnd="8dp"
             android:text="Convert to PDF"
             android:textColor="@color/blue_600"
-            app:strokeColor="@color/blue_600"
-            app:iconTint="@color/blue_600"/>
+            app:strokeColor="@color/blue_600"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveResults"
-            style="@style/Widget.MaterialComponents.Button"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:text="Save All Results"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/blue_600"
-            android:stateListAnimator="@null"/>
+            android:textColor="@color/blue_600"
+            app:strokeColor="@color/blue_600"/>
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConvertToPdfAndSaveResults"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="SAVE AND CONVERT TO PDF"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/blue_600"
+        android:stateListAnimator="@null"/>
 
 </LinearLayout>

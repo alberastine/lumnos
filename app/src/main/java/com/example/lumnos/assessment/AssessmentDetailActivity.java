@@ -80,6 +80,10 @@ public class AssessmentDetailActivity extends AppCompatActivity {
 
         binding.btnSaveResults.setOnClickListener(v -> saveResults());
         binding.btnConvertToPdf.setOnClickListener(v -> downloadAssessmentAsPdf());
+        binding.btnConvertToPdfAndSaveResults.setOnClickListener(v -> {
+            saveAndDownloadResults();
+            Toast.makeText(this, "Results saved and PDF generated successfully!", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void loadData() {
@@ -99,6 +103,12 @@ public class AssessmentDetailActivity extends AppCompatActivity {
         binding.rvStudentResults.setLayoutManager(new LinearLayoutManager(this));
         binding.rvStudentResults.setAdapter(adapter);
     }
+
+    private void saveAndDownloadResults() {
+        saveResults();
+        downloadAssessmentAsPdf();
+    }
+
 
     private void saveResults() {
         List<ResultModel> finalResults = adapter.getResults(assessment.getId());
@@ -174,7 +184,7 @@ public class AssessmentDetailActivity extends AppCompatActivity {
             for (ResultModel r : existingResults) {
                 if (r.getStudentId().equals(student.getId())) {
                     status = r.isPassed() ? "Submitted" : "Missing";
-                    result = r.getScore() > 0 ? String.valueOf(r.getScore()) : "Missing";
+                    result = r.getScore() > 0 ? String.valueOf(r.getScore()) : "--";
                     break;
                 }
             }
