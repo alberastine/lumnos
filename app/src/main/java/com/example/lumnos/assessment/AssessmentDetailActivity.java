@@ -106,7 +106,6 @@ public class AssessmentDetailActivity extends AppCompatActivity {
         String key = "results_" + assessment.getId();
         prefsManager.saveData(key, JsonUtils.toJson(finalResults));
         Toast.makeText(this, "Results Saved!", Toast.LENGTH_SHORT).show();
-        finish();
     }
 
     private void downloadAssessmentAsPdf() {
