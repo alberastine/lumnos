@@ -39,5 +39,23 @@ public class StudentManager {
         prefsManager.saveData(STUDENTS_KEY, JsonUtils.toJson(students));
     }
 
+    public void updateStudent(String studentId, String newName) {
+        List<StudentModel> students = getStudents();
+        for (StudentModel student : students) {
+            if (student.getId().equals(studentId)) {
+                student.setName(newName); // We'll need to add setName in StudentModel
+                break;
+            }
+        }
+        prefsManager.saveData(STUDENTS_KEY, JsonUtils.toJson(students));
+    }
+
+    public void deleteStudent(String studentId) {
+        List<StudentModel> students = getStudents();
+        students.removeIf(student -> student.getId().equals(studentId));
+        prefsManager.saveData(STUDENTS_KEY, JsonUtils.toJson(students));
+    }
+
+
     // Additional methods for updating/deleting students can be added here
 }

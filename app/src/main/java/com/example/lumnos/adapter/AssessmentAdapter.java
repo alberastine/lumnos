@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lumnos.R;
 import com.example.lumnos.databinding.ItemAssessmentBinding;
 import com.example.lumnos.models.AssessmentModel;
 import java.util.List;
@@ -16,6 +17,8 @@ public class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.As
 
     public interface OnAssessmentClickListener {
         void onAssessmentClick(AssessmentModel assessment);
+        void onAssessmentEdit(AssessmentModel assessment);
+        void onAssessmentDelete(AssessmentModel assessment);
     }
 
     public AssessmentAdapter(List<AssessmentModel> assessments, OnAssessmentClickListener listener) {
@@ -51,7 +54,10 @@ public class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.As
         public void bind(AssessmentModel assessment, OnAssessmentClickListener listener) {
             binding.tvAssessmentName.setText(assessment.getName());
             binding.tvAssessmentType.setText(assessment.getType().toString());
+
             itemView.setOnClickListener(v -> listener.onAssessmentClick(assessment));
+            binding.getRoot().findViewById(R.id.editAssessment).setOnClickListener(v -> listener.onAssessmentEdit(assessment));
+            binding.getRoot().findViewById(R.id.deleteAssessment).setOnClickListener(v -> listener.onAssessmentDelete(assessment));
         }
     }
 }

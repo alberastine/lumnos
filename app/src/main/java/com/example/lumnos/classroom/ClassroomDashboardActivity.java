@@ -86,16 +86,115 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
     private void setupRecyclerViews() {
         // Students
         studentList = new ArrayList<>();
-        studentAdapter = new StudentAdapter(studentList);
+        studentAdapter = new StudentAdapter(studentList, new StudentAdapter.OnStudentClickListener() {
+            @Override
+            public void onStudentEdit(StudentModel student) {
+                showEditStudentDialog(student);
+            }
+
+            @Override
+            public void onStudentDelete(StudentModel student) {
+                showDeleteStudentDialog(student);
+            }
+        });
         binding.rvStudents.setLayoutManager(new LinearLayoutManager(this));
         binding.rvStudents.setAdapter(studentAdapter);
 
         // Assessments
         assessmentList = new ArrayList<>();
-        assessmentAdapter = new AssessmentAdapter(assessmentList, this::onAssessmentClicked);
+        assessmentAdapter = new AssessmentAdapter(assessmentList, new AssessmentAdapter.OnAssessmentClickListener() {
+            @Override
+            public void onAssessmentClick(AssessmentModel assessment) {
+                Intent intent = new Intent(ClassroomDashboardActivity.this, AssessmentDetailActivity.class);
+                intent.putExtra("ASSESSMENT_OBJECT", assessment);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAssessmentEdit(AssessmentModel assessment) {
+                showEditAssessmentDialog(assessment);
+            }
+
+            @Override
+            public void onAssessmentDelete(AssessmentModel assessment) {
+                showDeleteAssessmentDialog(assessment);
+            }
+        });
         binding.rvAssessments.setLayoutManager(new LinearLayoutManager(this));
         binding.rvAssessments.setAdapter(assessmentAdapter);
     }
+
+    // Edit Student
+    private void showEditStudentDialog(StudentModel student) {
+        EditText input = new EditText(this);
+        input.setText(student.getName());
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Student")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String newName = input.getText().toString().trim();
+                    if (!newName.isEmpty()) {
+                        studentManager.updateStudent(student.getId(), newName);
+                        loadStudents();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // Delete Student
+    private void showDeleteStudentDialog(StudentModel student) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Student")
+                .setMessage("Are you sure you want to delete this student?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    studentManager.deleteStudent(student.getId());
+                    loadStudents();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // Edit Assessment
+    private void showEditAssessmentDialog(AssessmentModel assessment) {
+        EditText input = new EditText(this);
+        input.setText(assessment.getName());
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Assessment")
+                .setView(input)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String newName = input.getText().toString().trim();
+                    if (!newName.isEmpty()) {
+                        assessment.setName(newName);
+                        saveAssessments(); // save to SharedPrefs
+                        loadAssessments();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // Delete Assessment
+    private void showDeleteAssessmentDialog(AssessmentModel assessment) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Assessment")
+                .setMessage("Are you sure you want to delete this assessment?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    assessmentList.remove(assessment);
+                    saveAssessments(); // save updated list
+                    loadAssessments();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // Save assessments to SharedPrefs
+    private void saveAssessments() {
+        String key = "assessments_" + classroomId;
+        prefsManager.saveData(key, JsonUtils.toJson(assessmentList));
+    }
+
+
 
     private void loadStudents() {
         studentList.clear();

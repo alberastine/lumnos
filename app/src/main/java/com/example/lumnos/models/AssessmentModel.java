@@ -29,4 +29,8 @@ public class AssessmentModel implements Serializable {
     public AssessmentType getType() { return type; }
     public String getName() { return name; }
     public Format getFormat() { return format; }
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }
