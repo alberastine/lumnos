@@ -1,7 +1,9 @@
 package com.example.lumnos.models;
 
 
-public class AssessmentModel {
+import java.io.Serializable;
+
+public class AssessmentModel implements Serializable {
     public enum Format { CHECKBOX, SCORE, BOTH }
     public enum AssessmentType { ACTIVITY, ASSIGNMENT, RECITATION, EXAM, PROJECT }
 

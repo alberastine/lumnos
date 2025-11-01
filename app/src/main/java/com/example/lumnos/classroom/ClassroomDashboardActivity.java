@@ -181,7 +181,7 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
 
     private void onAssessmentClicked(AssessmentModel assessment) {
         Intent intent = new Intent(this, AssessmentDetailActivity.class);
-        intent.putExtra("ASSESSMENT_OBJECT", (Parcelable) assessment);
+        intent.putExtra("ASSESSMENT_OBJECT", assessment);
         startActivity(intent);
     }
 
