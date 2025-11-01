@@ -98,14 +98,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="16dp">
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:dividerPadding="8dp"
-            android:showDividers="middle">
+            android:showDividers="middle"
+            >
 
             <!-- Assessments Card -->
             <LinearLayout
@@ -113,7 +114,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginHorizontal="16dp">
 
                 <TextView
                     android:id="@+id/tvAssessmentsHeader"
@@ -139,9 +142,11 @@
                     android:stateListAnimator="@null"/>
             </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
                 android:layout_marginBottom="16dp"
@@ -186,7 +191,7 @@
                         android:layout_height="wrap_content" />
 
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </androidx.cardview.widget.CardView>
 
             <!-- Students Card -->
             <LinearLayout
@@ -194,6 +199,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginBottom="12dp">
 
                 <TextView
@@ -223,6 +229,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
                 android:background="@color/white">
