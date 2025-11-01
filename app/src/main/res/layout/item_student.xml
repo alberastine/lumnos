@@ -4,8 +4,8 @@
     android:layout_height="wrap_content"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
     android:orientation="vertical">
 
     <TextView
@@ -15,4 +15,10 @@
         android:textColor="@color/black"
         android:text="Student Name"
         android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/gray_300"/>
 </LinearLayout>
