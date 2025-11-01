@@ -2,25 +2,24 @@ package com.example.lumnos.classroom;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.lumnos.R;
-import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.assessment.AddAssessmentActivity;
+import com.example.lumnos.assessment.AssessmentDetailActivity;
 import com.example.lumnos.adapter.AssessmentAdapter;
 import com.example.lumnos.adapter.StudentAdapter;
-import com.example.lumnos.assessment.AssessmentDetailActivity;
 import com.example.lumnos.data.SharedPrefsManager;
 import com.example.lumnos.databinding.ActivityClassroomDashboardBinding;
 import com.example.lumnos.models.AssessmentModel;
 import com.example.lumnos.models.StudentModel;
 import com.example.lumnos.utils.JsonUtils;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -57,10 +56,7 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        binding.toolbar.getNavigationIcon()
-                .setTint(getResources().getColor(R.color.black));
-
+        binding.toolbar.getNavigationIcon().setTint(getResources().getColor(R.color.black));
         binding.tvToolbarTitle.setText(classroomName);
 
         prefsManager = new SharedPrefsManager(this);
@@ -124,132 +120,13 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         binding.rvAssessments.setAdapter(assessmentAdapter);
     }
 
-    // Edit Student
-    private void showEditStudentDialog(StudentModel student) {
-        EditText input = new EditText(this);
-        input.setText(student.getName());
-        new AlertDialog.Builder(this)
-                .setTitle("Edit Student")
-                .setView(input)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String newName = input.getText().toString().trim();
-                    if (!newName.isEmpty()) {
-                        studentManager.updateStudent(student.getId(), newName);
-                        loadStudents();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    // Delete Student
-    private void showDeleteStudentDialog(StudentModel student) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Student")
-                .setMessage("Are you sure you want to delete this student?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    studentManager.deleteStudent(student.getId());
-                    loadStudents();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    // Edit Assessment
-    private void showEditAssessmentDialog(AssessmentModel assessment) {
-        EditText input = new EditText(this);
-        input.setText(assessment.getName());
-        new AlertDialog.Builder(this)
-                .setTitle("Edit Assessment")
-                .setView(input)
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String newName = input.getText().toString().trim();
-                    if (!newName.isEmpty()) {
-                        assessment.setName(newName);
-                        saveAssessments(); // save to SharedPrefs
-                        loadAssessments();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    // Delete Assessment
-    private void showDeleteAssessmentDialog(AssessmentModel assessment) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Assessment")
-                .setMessage("Are you sure you want to delete this assessment?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    assessmentList.remove(assessment);
-                    saveAssessments(); // save updated list
-                    loadAssessments();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    // Save assessments to SharedPrefs
-    private void saveAssessments() {
-        String key = "assessments_" + classroomId;
-        prefsManager.saveData(key, JsonUtils.toJson(assessmentList));
-    }
-
-
-
-    private void loadStudents() {
-        studentList.clear();
-        studentList.addAll(studentManager.getStudents());
-        studentAdapter.notifyDataSetChanged();
-
-        if (studentList.isEmpty()) {
-            binding.tvNoStudentsImg.setVisibility(View.VISIBLE);
-            binding.tvNoStudents.setVisibility(View.VISIBLE);
-            binding.rvStudents.setVisibility(View.GONE);
-        } else {
-            binding.tvNoStudentsImg.setVisibility(View.GONE);
-            binding.tvNoStudents.setVisibility(View.GONE);
-            binding.rvStudents.setVisibility(View.VISIBLE);
-        }
-        updateToolbarSubtitle();
-    }
-
-    private void loadAssessments() {
-        String key = "assessments_" + classroomId;
-        String json = prefsManager.getData(key);
-        Type type = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
-        List<AssessmentModel> loadedAssessments = JsonUtils.fromJson(json, type);
-
-        assessmentList.clear();
-        if (loadedAssessments != null) {
-            assessmentList.addAll(loadedAssessments);
-        }
-        assessmentAdapter.notifyDataSetChanged();
-
-        if (assessmentList.isEmpty()) {
-            binding.tvNoAssessmentsImg.setVisibility(View.VISIBLE);
-            binding.tvNoAssessments.setVisibility(View.VISIBLE);
-            binding.rvAssessments.setVisibility(View.GONE);
-        } else {
-            binding.tvNoAssessmentsImg.setVisibility(View.GONE);
-            binding.tvNoAssessments.setVisibility(View.GONE);
-            binding.rvAssessments.setVisibility(View.VISIBLE);
-        }
-        updateToolbarSubtitle();
-    }
-
-    private void updateToolbarSubtitle() {
-        int studentCount = studentList.size();
-        int assessmentCount = assessmentList.size();
-
-        binding.tvStudentsCount.setText(studentCount + (studentCount == 1 ? " student" : " students"));
-        binding.tvAssessmentsCount.setText(assessmentCount + (assessmentCount == 1 ? " assessment" : " assessments"));
-    }
-
+    // ------------------- Dialogs -------------------
 
     private void showAddStudentDialog() {
-        // Inflate custom layout
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_student, null);
-        final EditText input = dialogView.findViewById(R.id.etStudentName);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_item, null);
+        EditText input = dialogView.findViewById(R.id.etItemName);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        title.setText("Add Student");
 
         AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
                 .setView(dialogView)
@@ -258,7 +135,6 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
                 .create();
 
         dialog.setOnShowListener(d -> {
-            // Customize buttons
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
 
@@ -266,7 +142,7 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
                 String studentName = input.getText().toString().trim();
                 if (!studentName.isEmpty()) {
                     studentManager.addStudent(studentName);
-                    loadStudents(); // Refresh the list
+                    loadStudents();
                     dialog.dismiss();
                 } else {
                     input.setError("Student name is required");
@@ -277,11 +153,166 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void showEditStudentDialog(StudentModel student) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_item, null);
+        EditText input = dialogView.findViewById(R.id.etItemName);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        title.setText("Edit Student");
 
-    private void onAssessmentClicked(AssessmentModel assessment) {
-        Intent intent = new Intent(this, AssessmentDetailActivity.class);
-        intent.putExtra("ASSESSMENT_OBJECT", assessment);
-        startActivity(intent);
+        input.setText(student.getName());
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String newName = input.getText().toString().trim();
+                if (!newName.isEmpty()) {
+                    studentManager.updateStudent(student.getId(), newName);
+                    loadStudents();
+                    dialog.dismiss();
+                } else {
+                    input.setError("Student name cannot be empty");
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void showDeleteStudentDialog(StudentModel student) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_item, null);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView message = dialogView.findViewById(R.id.tvDialogMessage);
+        title.setText("Delete Student");
+        message.setText("Are you sure you want to delete this student?");
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Delete", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                studentManager.deleteStudent(student.getId());
+                loadStudents();
+                dialog.dismiss();
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void showEditAssessmentDialog(AssessmentModel assessment) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_item, null);
+        EditText input = dialogView.findViewById(R.id.etItemName);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        title.setText("Edit Assessment");
+        input.setText(assessment.getName());
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String newName = input.getText().toString().trim();
+                if (!newName.isEmpty()) {
+                    assessment.setName(newName);
+                    saveAssessments();
+                    loadAssessments();
+                    dialog.dismiss();
+                } else {
+                    input.setError("Assessment name cannot be empty");
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void showDeleteAssessmentDialog(AssessmentModel assessment) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_item, null);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView message = dialogView.findViewById(R.id.tvDialogMessage);
+        title.setText("Delete Assessment");
+        message.setText("Are you sure you want to delete this assessment?");
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Delete", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                assessmentList.remove(assessment);
+                saveAssessments();
+                loadAssessments();
+                dialog.dismiss();
+            });
+        });
+
+        dialog.show();
+    }
+
+    // ------------------- Load & Save -------------------
+
+    private void loadStudents() {
+        studentList.clear();
+        studentList.addAll(studentManager.getStudents());
+        studentAdapter.notifyDataSetChanged();
+
+        binding.rvStudents.setVisibility(studentList.isEmpty() ? View.GONE : View.VISIBLE);
+        binding.tvNoStudents.setVisibility(studentList.isEmpty() ? View.VISIBLE : View.GONE);
+        binding.tvNoStudentsImg.setVisibility(studentList.isEmpty() ? View.VISIBLE : View.GONE);
+
+        updateToolbarSubtitle();
+    }
+
+    private void loadAssessments() {
+        String key = "assessments_" + classroomId;
+        String json = prefsManager.getData(key);
+        Type type = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
+        List<AssessmentModel> loadedAssessments = JsonUtils.fromJson(json, type);
+
+        assessmentList.clear();
+        if (loadedAssessments != null) assessmentList.addAll(loadedAssessments);
+        assessmentAdapter.notifyDataSetChanged();
+
+        binding.rvAssessments.setVisibility(assessmentList.isEmpty() ? View.GONE : View.VISIBLE);
+        binding.tvNoAssessments.setVisibility(assessmentList.isEmpty() ? View.VISIBLE : View.GONE);
+        binding.tvNoAssessmentsImg.setVisibility(assessmentList.isEmpty() ? View.VISIBLE : View.GONE);
+
+        updateToolbarSubtitle();
+    }
+
+    private void saveAssessments() {
+        String key = "assessments_" + classroomId;
+        prefsManager.saveData(key, JsonUtils.toJson(assessmentList));
+    }
+
+    private void updateToolbarSubtitle() {
+        binding.tvStudentsCount.setText(studentList.size() + (studentList.size() == 1 ? " student" : " students"));
+        binding.tvAssessmentsCount.setText(assessmentList.size() + (assessmentList.size() == 1 ? " assessment" : " assessments"));
     }
 
     @Override
