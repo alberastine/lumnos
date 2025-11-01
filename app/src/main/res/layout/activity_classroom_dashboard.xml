@@ -177,7 +177,7 @@
                         android:text="No assessments yet\n\nCreate your first assessment to get started"
                         android:textColor="@color/gray_600"
                         android:textSize="14sp"
-                        android:paddingVertical="32dp"
+                        android:paddingVertical="10dp"
                         android:visibility="gone" />
 
                     <androidx.recyclerview.widget.RecyclerView
@@ -257,7 +257,7 @@
                         android:text="No students enrolled\n\nAdd your first student to get started"
                         android:textColor="@color/gray_600"
                         android:textSize="14sp"
-                        android:paddingVertical="32dp"
+                        android:paddingVertical="10dp"
                         android:visibility="gone" />
 
                     <androidx.recyclerview.widget.RecyclerView
