@@ -139,11 +139,24 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                String studentName = input.getText().toString().trim();
-                if (!studentName.isEmpty()) {
-                    studentManager.addStudent(studentName);
-                    loadStudents();
-                    dialog.dismiss();
+                String inputText = input.getText().toString().trim();
+                if (!inputText.isEmpty()) {
+                    String[] names = inputText.split(",");
+                    boolean hasValidName = false;
+                    for (String name : names) {
+                        String cleanName = name.trim();
+                        if (!cleanName.isEmpty()) {
+                            studentManager.addStudent(cleanName);
+                            hasValidName = true;
+                        }
+                    }
+
+                    if (hasValidName) {
+                        loadStudents();
+                        dialog.dismiss();
+                    } else {
+                        input.setError("Please enter at least one valid student name");
+                    }
                 } else {
                     input.setError("Student name is required");
                 }
