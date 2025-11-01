@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.lumnos.R;
 import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.data.SharedPrefsManager;
 import com.example.lumnos.databinding.ActivityAddAssessmentBinding;
@@ -30,6 +31,9 @@ public class AddAssessmentActivity extends AppCompatActivity {
         binding = ActivityAddAssessmentBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        getWindow().setStatusBarColor(getResources().getColor(R.color.light_blue));
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
         classroomId = getIntent().getStringExtra("CLASSROOM_ID");
         prefsManager = new SharedPrefsManager(this);
 
@@ -41,8 +45,8 @@ public class AddAssessmentActivity extends AppCompatActivity {
 
     private void setupSpinner() {
         ArrayAdapter<AssessmentModel.AssessmentType> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, AssessmentModel.AssessmentType.values());
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                R.layout.spinner_item, AssessmentModel.AssessmentType.values());
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         binding.spinnerType.setAdapter(adapter);
     }
 
