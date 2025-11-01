@@ -148,24 +148,36 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
 
 
     private void showAddStudentDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Add New Student");
+        // Inflate custom layout
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_student, null);
+        final EditText input = dialogView.findViewById(R.id.etStudentName);
 
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-        input.setHint("Student Name");
-        builder.setView(input);
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Add", null)
+                .setNegativeButton("Cancel", null)
+                .create();
 
-        builder.setPositiveButton("Add", (dialog, which) -> {
-            String studentName = input.getText().toString().trim();
-            if (!studentName.isEmpty()) {
-                studentManager.addStudent(studentName);
-                loadStudents(); // Refresh the list
-            }
+        dialog.setOnShowListener(d -> {
+            // Customize buttons
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String studentName = input.getText().toString().trim();
+                if (!studentName.isEmpty()) {
+                    studentManager.addStudent(studentName);
+                    loadStudents(); // Refresh the list
+                    dialog.dismiss();
+                } else {
+                    input.setError("Student name is required");
+                }
+            });
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
+
+        dialog.show();
     }
+
 
     private void onAssessmentClicked(AssessmentModel assessment) {
         Intent intent = new Intent(this, AssessmentDetailActivity.class);
