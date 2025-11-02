@@ -38,7 +38,6 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:textColorHint="@color/gray_600"/>
-
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
@@ -75,6 +74,24 @@
             android:text="Both" />
     </RadioGroup>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add to other classrooms"
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+
+    <!-- RecyclerView expands to fill remaining space -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOtherClassrooms"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:nestedScrollingEnabled="true"/>
+
+    <!-- Buttons always stay at bottom -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -106,5 +123,4 @@
             android:stateListAnimator="@null"/>
 
     </LinearLayout>
-
 </LinearLayout>

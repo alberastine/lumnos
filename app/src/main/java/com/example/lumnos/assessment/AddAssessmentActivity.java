@@ -6,8 +6,11 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.lumnos.R;
+import com.example.lumnos.adapter.ClassroomCheckboxAdapter;
+import com.example.lumnos.models.ClassroomModel;
 import com.google.gson.reflect.TypeToken;
 import com.example.lumnos.data.SharedPrefsManager;
 import com.example.lumnos.databinding.ActivityAddAssessmentBinding;
@@ -24,6 +27,8 @@ public class AddAssessmentActivity extends AppCompatActivity {
     private ActivityAddAssessmentBinding binding;
     private SharedPrefsManager prefsManager;
     private String classroomId;
+    private ClassroomCheckboxAdapter classroomAdapter;
+    private List<ClassroomModel> allClassrooms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +43,7 @@ public class AddAssessmentActivity extends AppCompatActivity {
         prefsManager = new SharedPrefsManager(this);
 
         setupSpinner();
+        loadOtherClassrooms();
 
         binding.btnSave.setOnClickListener(v -> saveAssessment());
         binding.btnCancel.setOnClickListener(v -> finish());
@@ -50,6 +56,31 @@ public class AddAssessmentActivity extends AppCompatActivity {
         binding.spinnerType.setAdapter(adapter);
     }
 
+    private void loadOtherClassrooms() {
+        // Load classrooms from SharedPrefs or your source
+        String json = prefsManager.getData("classrooms");
+        Type listType = new TypeToken<ArrayList<ClassroomModel>>(){}.getType();
+        allClassrooms = JsonUtils.fromJson(json, listType);
+
+        if (allClassrooms == null) allClassrooms = new ArrayList<>();
+
+        // Remove current classroom from the list
+        List<ClassroomModel> otherClassrooms = new ArrayList<>();
+        for (ClassroomModel c : allClassrooms) {
+            if (!c.getId().equals(classroomId)) {
+                otherClassrooms.add(c);
+            }
+        }
+
+        // Create the adapter
+        classroomAdapter = new ClassroomCheckboxAdapter(otherClassrooms);
+
+        // Set adapter and layout manager
+        binding.rvOtherClassrooms.setAdapter(classroomAdapter);
+        binding.rvOtherClassrooms.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+
     private void saveAssessment() {
         String name = binding.etAssessmentName.getText().toString().trim();
         if (TextUtils.isEmpty(name)) {
@@ -59,28 +90,33 @@ public class AddAssessmentActivity extends AppCompatActivity {
 
         AssessmentModel.AssessmentType type = (AssessmentModel.AssessmentType) binding.spinnerType.getSelectedItem();
         AssessmentModel.Format format = getSelectedFormat();
-
         if (format == null) {
             Toast.makeText(this, "Please select a format", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String key = "assessments_" + classroomId;
-        String json = prefsManager.getData(key);
-        Type listType = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
-        List<AssessmentModel> assessments = JsonUtils.fromJson(json, listType);
-        if (assessments == null) {
-            assessments = new ArrayList<>();
+        List<String> targetClassrooms = new ArrayList<>();
+        targetClassrooms.add(classroomId); // always add the current classroom
+        targetClassrooms.addAll(classroomAdapter.getSelectedClassroomIds());
+
+        long timestamp = System.currentTimeMillis();
+
+        for (String cId : targetClassrooms) {
+            String key = "assessments_" + cId;
+            String json = prefsManager.getData(key);
+            Type listType = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
+            List<AssessmentModel> assessments = JsonUtils.fromJson(json, listType);
+            if (assessments == null) assessments = new ArrayList<>();
+
+            String id = UUID.randomUUID().toString();
+            assessments.add(new AssessmentModel(id, cId, type, name, format, timestamp));
+            prefsManager.saveData(key, JsonUtils.toJson(assessments));
         }
 
-        String id = UUID.randomUUID().toString();
-        long timestamp = System.currentTimeMillis();
-        assessments.add(new AssessmentModel(id, classroomId, type, name, format, timestamp));
-
-        prefsManager.saveData(key, JsonUtils.toJson(assessments));
         Toast.makeText(this, "Assessment saved!", Toast.LENGTH_SHORT).show();
         finish();
     }
+
 
     private AssessmentModel.Format getSelectedFormat() {
         int selectedId = binding.rgFormat.getCheckedRadioButtonId();
