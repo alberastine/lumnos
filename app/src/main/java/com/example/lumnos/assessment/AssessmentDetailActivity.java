@@ -1,6 +1,9 @@
 package com.example.lumnos.assessment;
 
+import android.content.ContentValues;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -134,7 +137,7 @@ public class AssessmentDetailActivity extends AppCompatActivity {
 
         int pageNumber = 1;
         android.graphics.pdf.PdfDocument.PageInfo pageInfo =
-                new android.graphics.pdf.PdfDocument.PageInfo.Builder(842, 595, pageNumber).create(); // Landscape A4
+                new android.graphics.pdf.PdfDocument.PageInfo.Builder(842, 595, pageNumber).create();
         android.graphics.pdf.PdfDocument.Page page = pdfDocument.startPage(pageInfo);
         android.graphics.Canvas canvas = page.getCanvas();
 
@@ -147,32 +150,33 @@ public class AssessmentDetailActivity extends AppCompatActivity {
         y += 20;
         paint.setTextSize(14);
 
-        // ✅ Fetch classroom name with fallback
+        // ✅ Get classroom name with fallback
         String classroomName = studentManager.getClassroomName();
         if (classroomName == null || classroomName.isEmpty()) {
             String classroomsJson = prefsManager.getData("classrooms");
-            Type type = new TypeToken<List<ClassroomModel>>(){}.getType();
+            Type type = new TypeToken<List<ClassroomModel>>() {}.getType();
             List<ClassroomModel> classrooms = JsonUtils.fromJson(classroomsJson, type);
 
             if (classrooms != null) {
                 for (ClassroomModel c : classrooms) {
                     if (c.getId().equals(assessment.getClassroomId())) {
                         classroomName = c.getName();
-                        studentManager.setClassroomName(classroomName); // ✅ store for next time
+                        studentManager.setClassroomName(classroomName); // cache for next time
                         break;
                     }
                 }
             }
 
-            if (classroomName == null) classroomName = "Unknown Class";
+            if (classroomName == null || classroomName.isEmpty()) {
+                classroomName = "Unknown Class";
+            }
         }
 
-        // ✅ Draw classroom name
+        // Draw classroom name
         canvas.drawText("Classroom: " + classroomName, 40, y, paint);
         y += 30;
 
         // Table header
-        paint.setTextSize(14);
         paint.setFakeBoldText(true);
         canvas.drawText("Student Name", 40, y, paint);
         canvas.drawText("Status", 300, y, paint);
@@ -211,18 +215,27 @@ public class AssessmentDetailActivity extends AppCompatActivity {
 
         pdfDocument.finishPage(page);
 
-        // Save to Downloads folder
-        String safeClassroom = classroomName.replaceAll("\\s+", "_");
-        String safeAssessment = assessment.getName().replaceAll("\\s+", "_");
-        String fileName = safeClassroom + "_" + safeAssessment + "_Results.pdf";
+        // Save PDF using MediaStore (Android Q+)
+        String fileName = classroomName.replaceAll("\\s+", "_") + "_" +
+                assessment.getName().replaceAll("\\s+", "_") + "_Results.pdf";
 
-        java.io.File downloadsFolder = android.os.Environment.getExternalStoragePublicDirectory(
-                android.os.Environment.DIRECTORY_DOWNLOADS);
-        java.io.File file = new java.io.File(downloadsFolder, fileName);
+        ContentValues values = new ContentValues();
+        values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
+        values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/pdf");
+        values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, "Download/");
 
         try {
-            pdfDocument.writeTo(new java.io.FileOutputStream(file));
-            Toast.makeText(this, "PDF saved to Downloads", Toast.LENGTH_SHORT).show();
+            android.net.Uri uri = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                uri = getContentResolver().insert(
+                        android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            }
+            if (uri != null) {
+                pdfDocument.writeTo(getContentResolver().openOutputStream(uri));
+                Toast.makeText(this, "PDF saved to Downloads", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Error: Unable to get Uri for saving PDF", Toast.LENGTH_LONG).show();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error saving PDF: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -230,7 +243,6 @@ public class AssessmentDetailActivity extends AppCompatActivity {
             pdfDocument.close();
         }
     }
-
 
 
     @Override
