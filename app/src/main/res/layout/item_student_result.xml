@@ -38,6 +38,7 @@
             android:layout_marginStart="8dp"
             android:inputType="numberDecimal"
             android:textColor="@color/black"
+            android:textColorHint="@color/gray"
             android:hint="Score"/>
 
     </LinearLayout>

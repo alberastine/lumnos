@@ -1,47 +1,56 @@
 package com.example.lumnos.adapter;
 
+import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lumnos.data.SharedPrefsManager;
 import com.example.lumnos.databinding.ItemStudentResultBinding;
 import com.example.lumnos.models.AssessmentModel;
 import com.example.lumnos.models.ResultModel;
 import com.example.lumnos.models.StudentModel;
+import com.example.lumnos.utils.JsonUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentResultsAdapter.ResultViewHolder> {
 
     private final List<StudentModel> students;
     private final Map<String, ResultModel> resultsMap;
     private final AssessmentModel.Format format;
+    private final SharedPrefsManager prefsManager;
+    private final String assessmentId;
 
-    public AssessmentResultsAdapter(List<StudentModel> students, List<ResultModel> existingResults, AssessmentModel.Format format) {
+    public AssessmentResultsAdapter(
+            Context context,
+            List<StudentModel> students,
+            List<ResultModel> existingResults,
+            AssessmentModel.Format format,
+            String assessmentId
+    ) {
         this.students = students;
         this.format = format;
+        this.assessmentId = assessmentId;
+        this.prefsManager = new SharedPrefsManager(context);
 
-        // Safely initialize the results map
-        this.resultsMap = new HashMap<>();
-        if (existingResults != null) {
-            for (ResultModel result : existingResults) {
-                this.resultsMap.put(result.getStudentId(), result);
-            }
-        }
+        // Map existing results by student ID
+        this.resultsMap = existingResults.stream()
+                .collect(Collectors.toMap(ResultModel::getStudentId, result -> result));
     }
 
     @NonNull
     @Override
     public ResultViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemStudentResultBinding binding = ItemStudentResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        ItemStudentResultBinding binding = ItemStudentResultBinding.inflate(
+                LayoutInflater.from(parent.getContext()), parent, false);
         return new ResultViewHolder(binding);
     }
 
@@ -49,13 +58,6 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
     public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
         StudentModel student = students.get(position);
         ResultModel result = resultsMap.get(student.getId());
-
-        // Always bind using saved data
-        if (result == null) {
-            result = new ResultModel("", student.getId(), false, 0, System.currentTimeMillis());
-            resultsMap.put(student.getId(), result);
-        }
-
         holder.bind(student, result, format);
     }
 
@@ -64,17 +66,14 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
         return students.size();
     }
 
-    public List<ResultModel> getResults(String assessmentId) {
-        for (ResultModel result : resultsMap.values()) {
-            result.setAssessmentId(assessmentId);
-            result.setUpdatedAt(System.currentTimeMillis());
-        }
+    public List<ResultModel> getResults() {
+        // Return all results as a list
         return new ArrayList<>(resultsMap.values());
     }
 
     class ResultViewHolder extends RecyclerView.ViewHolder {
         private final ItemStudentResultBinding binding;
-        private TextWatcher scoreWatcher; // keep reference to remove it properly
+        private TextWatcher textWatcher;
 
         public ResultViewHolder(ItemStudentResultBinding binding) {
             super(binding.getRoot());
@@ -84,45 +83,53 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
         public void bind(StudentModel student, ResultModel result, AssessmentModel.Format format) {
             binding.tvStudentName.setText(student.getName());
 
-            // Setup visibility
+            final ResultModel currentResult = resultsMap.computeIfAbsent(student.getId(),
+                    k -> new ResultModel(assessmentId, student.getId(), false, 0, 0));
+
+            // Show/hide views based on assessment format
             binding.cbPassed.setVisibility(
                     format == AssessmentModel.Format.CHECKBOX || format == AssessmentModel.Format.BOTH
-                            ? View.VISIBLE : View.GONE);
+                            ? View.VISIBLE : View.GONE
+            );
             binding.etScore.setVisibility(
                     format == AssessmentModel.Format.SCORE || format == AssessmentModel.Format.BOTH
-                            ? View.VISIBLE : View.GONE);
+                            ? View.VISIBLE : View.GONE
+            );
 
-            // --- Remove old listener before rebinding ---
-            if (scoreWatcher != null) {
-                binding.etScore.removeTextChangedListener(scoreWatcher);
-            }
+            // Remove old text watcher before adding new
+            if (textWatcher != null) binding.etScore.removeTextChangedListener(textWatcher);
 
-            // --- Restore saved values ---
-            binding.cbPassed.setOnCheckedChangeListener(null); // prevent unwanted triggers
-            binding.cbPassed.setChecked(result.isPassed());
-            binding.etScore.setText(String.valueOf(result.getScore()));
+            // Set initial values
+            binding.cbPassed.setChecked(currentResult.isPassed());
+            binding.etScore.setText(currentResult.getScore() == 0 ? "" : String.valueOf(currentResult.getScore()));
 
-            // --- Set new listeners ---
+            // Checkbox listener
             binding.cbPassed.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                result.setPassed(isChecked);
-                resultsMap.put(student.getId(), result);
+                currentResult.setPassed(isChecked);
+                currentResult.setUpdatedAt(System.currentTimeMillis());
+                autoSave();
             });
 
-            scoreWatcher = new TextWatcher() {
+            // TextWatcher for score input
+            textWatcher = new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
                 @Override public void afterTextChanged(Editable s) {
-                    float score = 0;
                     try {
-                        if (!s.toString().isEmpty()) {
-                            score = Float.parseFloat(s.toString());
-                        }
-                    } catch (NumberFormatException ignored) {}
-                    result.setScore(score);
-                    resultsMap.put(student.getId(), result);
+                        float score = Float.parseFloat(s.toString());
+                        currentResult.setScore(score);
+                    } catch (NumberFormatException e) {
+                        currentResult.setScore(0);
+                    }
+                    currentResult.setUpdatedAt(System.currentTimeMillis());
+                    autoSave();
                 }
             };
-            binding.etScore.addTextChangedListener(scoreWatcher);
+            binding.etScore.addTextChangedListener(textWatcher);
+        }
+
+        private void autoSave() {
+            prefsManager.saveData("results_" + assessmentId, JsonUtils.toJson(getResults()));
         }
     }
 }

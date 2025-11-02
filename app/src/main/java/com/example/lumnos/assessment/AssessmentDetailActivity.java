@@ -99,7 +99,13 @@ public class AssessmentDetailActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        adapter = new AssessmentResultsAdapter(studentList, existingResults, assessment.getFormat());
+        adapter = new AssessmentResultsAdapter(
+                this,
+                studentList,
+                existingResults,
+                assessment.getFormat(),
+                assessment.getId()
+        );
         binding.rvStudentResults.setLayoutManager(new LinearLayoutManager(this));
         binding.rvStudentResults.setAdapter(adapter);
     }
@@ -111,10 +117,8 @@ public class AssessmentDetailActivity extends AppCompatActivity {
 
 
     private void saveResults() {
-        List<ResultModel> finalResults = adapter.getResults(assessment.getId());
-
-        String key = "results_" + assessment.getId();
-        prefsManager.saveData(key, JsonUtils.toJson(finalResults));
+        List<ResultModel> finalResults = adapter.getResults();
+        prefsManager.saveData("results_" + assessment.getId(), JsonUtils.toJson(finalResults));
         Toast.makeText(this, "Results Saved!", Toast.LENGTH_SHORT).show();
     }
 
