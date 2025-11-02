@@ -43,6 +43,12 @@ public class AssessmentAdapter extends RecyclerView.Adapter<AssessmentAdapter.As
         return assessments.size();
     }
 
+    public void updateList(List<AssessmentModel> newList) {
+        assessments.clear();
+        assessments.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     static class AssessmentViewHolder extends RecyclerView.ViewHolder {
         private final ItemAssessmentBinding binding;
 

@@ -2,6 +2,8 @@ package com.example.lumnos.classroom;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -38,6 +40,9 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
     private AssessmentAdapter assessmentAdapter;
     private List<StudentModel> studentList;
     private List<AssessmentModel> assessmentList;
+    private List<StudentModel> fullStudentList;      // Original unfiltered students
+    private List<AssessmentModel> fullAssessmentList; // Original unfiltered assessments
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +69,7 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
 
         setupRecyclerViews();
         setupButtonListeners();
+        setupSearch();
     }
 
     @Override
@@ -73,9 +79,75 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         loadAssessments();
     }
 
+    // ------------------- SEARCH -------------------
+    private void setupSearch() {
+        // Assessments search
+        binding.etSearchAssessment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim().toLowerCase();
+                if (query.isEmpty()) {
+                    assessmentAdapter.updateList(fullAssessmentList); // Restore full list
+                } else {
+                    List<AssessmentModel> filtered = new ArrayList<>();
+                    for (AssessmentModel a : fullAssessmentList) {
+                        if (a.getName().toLowerCase().contains(query)) {
+                            filtered.add(a);
+                        }
+                    }
+                    assessmentAdapter.updateList(filtered);
+                }
+            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // Students search
+        binding.etSearchStudent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim().toLowerCase();
+                if (query.isEmpty()) {
+                    studentAdapter.updateList(fullStudentList); // Restore full list
+                } else {
+                    List<StudentModel> filtered = new ArrayList<>();
+                    for (StudentModel student : fullStudentList) {
+                        if (student.getName().toLowerCase().contains(query)) {
+                            filtered.add(student);
+                        }
+                    }
+                    studentAdapter.updateList(filtered);
+                }
+            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filterAssessments(String query) {
+        List<AssessmentModel> filteredList = new ArrayList<>();
+        for (AssessmentModel assessment : assessmentList) {
+            if (assessment.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(assessment);
+            }
+        }
+        assessmentAdapter.updateList(filteredList);
+    }
+
+    private void filterStudents(String query) {
+        List<StudentModel> filteredList = new ArrayList<>();
+        for (StudentModel student : studentList) {
+            if (student.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(student);
+            }
+        }
+        studentAdapter.updateList(filteredList);
+    }
+
     private void setupRecyclerViews() {
         // Students
         studentList = new ArrayList<>();
+        fullStudentList = new ArrayList<>();
         studentAdapter = new StudentAdapter(studentList, new StudentAdapter.OnStudentClickListener() {
             @Override
             public void onStudentEdit(StudentModel student) {
@@ -92,6 +164,7 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
 
         // Assessments
         assessmentList = new ArrayList<>();
+        fullAssessmentList = new ArrayList<>();
         assessmentAdapter = new AssessmentAdapter(assessmentList, new AssessmentAdapter.OnAssessmentClickListener() {
             @Override
             public void onAssessmentClick(AssessmentModel assessment) {
@@ -352,7 +425,10 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
 
     private void loadStudents() {
         studentList.clear();
-        studentList.addAll(studentManager.getStudents());
+        fullStudentList.clear();
+        List<StudentModel> students = studentManager.getStudents();
+        studentList.addAll(students);
+        fullStudentList.addAll(students);
         studentAdapter.notifyDataSetChanged();
 
         binding.rvStudents.setVisibility(studentList.isEmpty() ? View.GONE : View.VISIBLE);
@@ -369,7 +445,11 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         List<AssessmentModel> loadedAssessments = JsonUtils.fromJson(json, type);
 
         assessmentList.clear();
-        if (loadedAssessments != null) assessmentList.addAll(loadedAssessments);
+        fullAssessmentList.clear();
+        if (loadedAssessments != null) {
+            assessmentList.addAll(loadedAssessments);
+            fullAssessmentList.addAll(loadedAssessments);
+        }
         assessmentAdapter.notifyDataSetChanged();
 
         binding.rvAssessments.setVisibility(assessmentList.isEmpty() ? View.GONE : View.VISIBLE);

@@ -42,6 +42,12 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
         return students.size();
     }
 
+    public void updateList(List<StudentModel> newList) {
+        students.clear();
+        students.addAll(newList);
+        notifyDataSetChanged();
+    }
+
     class StudentViewHolder extends RecyclerView.ViewHolder {
         private final ItemStudentBinding binding;
 
