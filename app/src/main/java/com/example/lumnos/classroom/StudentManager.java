@@ -66,6 +66,10 @@ public class StudentManager {
         prefsManager.saveData(STUDENTS_KEY, JsonUtils.toJson(students));
     }
 
+    public void deleteAllStudents() {
+        prefsManager.saveData(STUDENTS_KEY, JsonUtils.toJson(new ArrayList<StudentModel>()));
+    }
+
 
     // Additional methods for updating/deleting students can be added here
 }

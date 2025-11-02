@@ -63,13 +63,7 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         studentManager = new StudentManager(this, classroomId);
 
         setupRecyclerViews();
-
-        binding.fabAddStudent.setOnClickListener(v -> showAddStudentDialog());
-        binding.fabAddAssessment.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddAssessmentActivity.class);
-            intent.putExtra("CLASSROOM_ID", classroomId);
-            startActivity(intent);
-        });
+        setupButtonListeners();
     }
 
     @Override
@@ -120,6 +114,19 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         binding.rvAssessments.setAdapter(assessmentAdapter);
     }
 
+    private void setupButtonListeners() {
+        binding.fabAddStudent.setOnClickListener(v -> showAddStudentDialog());
+        binding.fabAddAssessment.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddAssessmentActivity.class);
+            intent.putExtra("CLASSROOM_ID", classroomId);
+            startActivity(intent);
+        });
+
+        // Delete all buttons
+        binding.btnDeleteAllStudents.setOnClickListener(v -> showDeleteAllStudentsDialog());
+        binding.btnDeleteAllAssessments.setOnClickListener(v -> showDeleteAllAssessmentsDialog());
+    }
+
     // ------------------- Dialogs -------------------
 
     private void showAddStudentDialog() {
@@ -150,7 +157,6 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
                             hasValidName = true;
                         }
                     }
-
                     if (hasValidName) {
                         loadStudents();
                         dialog.dismiss();
@@ -226,6 +232,33 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void showDeleteAllStudentsDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_item, null);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView message = dialogView.findViewById(R.id.tvDialogMessage);
+        title.setText("Delete All Students");
+        message.setText("Are you sure you want to delete all students? This action cannot be undone.");
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Delete", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                studentManager.deleteAllStudents();
+                loadStudents();
+                dialog.dismiss();
+            });
+        });
+
+        dialog.show();
+    }
+
     private void showEditAssessmentDialog(AssessmentModel assessment) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_item, null);
         EditText input = dialogView.findViewById(R.id.etItemName);
@@ -278,6 +311,34 @@ public class ClassroomDashboardActivity extends AppCompatActivity {
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
                 assessmentList.remove(assessment);
+                saveAssessments();
+                loadAssessments();
+                dialog.dismiss();
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void showDeleteAllAssessmentsDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_item, null);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView message = dialogView.findViewById(R.id.tvDialogMessage);
+        title.setText("Delete All Assessments");
+        message.setText("Are you sure you want to delete all assessments? This action cannot be undone.");
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Delete", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                assessmentList.clear();
                 saveAssessments();
                 loadAssessments();
                 dialog.dismiss();
