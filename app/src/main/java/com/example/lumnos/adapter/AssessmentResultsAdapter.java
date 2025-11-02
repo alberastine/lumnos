@@ -5,6 +5,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,9 +15,9 @@ import com.example.lumnos.models.ResultModel;
 import com.example.lumnos.models.StudentModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentResultsAdapter.ResultViewHolder> {
 
@@ -27,8 +28,14 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
     public AssessmentResultsAdapter(List<StudentModel> students, List<ResultModel> existingResults, AssessmentModel.Format format) {
         this.students = students;
         this.format = format;
-        this.resultsMap = existingResults.stream()
-                .collect(Collectors.toMap(ResultModel::getStudentId, result -> result));
+
+        // Safely initialize the results map
+        this.resultsMap = new HashMap<>();
+        if (existingResults != null) {
+            for (ResultModel result : existingResults) {
+                this.resultsMap.put(result.getStudentId(), result);
+            }
+        }
     }
 
     @NonNull
@@ -42,6 +49,13 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
     public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
         StudentModel student = students.get(position);
         ResultModel result = resultsMap.get(student.getId());
+
+        // Always bind using saved data
+        if (result == null) {
+            result = new ResultModel("", student.getId(), false, 0, System.currentTimeMillis());
+            resultsMap.put(student.getId(), result);
+        }
+
         holder.bind(student, result, format);
     }
 
@@ -51,20 +65,16 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
     }
 
     public List<ResultModel> getResults(String assessmentId) {
-        // This is simplified. In a real app, you would get the updated data from the ViewHolder's listeners.
-        // For this example, we assume the map is updated directly by the holder.
-        students.forEach(student -> {
-            if (!resultsMap.containsKey(student.getId())) {
-                // Create a default empty result if none exists
-                resultsMap.put(student.getId(), new ResultModel(assessmentId, student.getId(), false, 0, 0));
-            }
-            resultsMap.get(student.getId()).setUpdatedAt(System.currentTimeMillis());
-        });
+        for (ResultModel result : resultsMap.values()) {
+            result.setAssessmentId(assessmentId);
+            result.setUpdatedAt(System.currentTimeMillis());
+        }
         return new ArrayList<>(resultsMap.values());
     }
 
     class ResultViewHolder extends RecyclerView.ViewHolder {
         private final ItemStudentResultBinding binding;
+        private TextWatcher scoreWatcher; // keep reference to remove it properly
 
         public ResultViewHolder(ItemStudentResultBinding binding) {
             super(binding.getRoot());
@@ -74,40 +84,45 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
         public void bind(StudentModel student, ResultModel result, AssessmentModel.Format format) {
             binding.tvStudentName.setText(student.getName());
 
-            // Get or create result model
-            final ResultModel currentResult = resultsMap.computeIfAbsent(student.getId(),
-                    k -> new ResultModel("", student.getId(), false, 0, 0));
+            // Setup visibility
+            binding.cbPassed.setVisibility(
+                    format == AssessmentModel.Format.CHECKBOX || format == AssessmentModel.Format.BOTH
+                            ? View.VISIBLE : View.GONE);
+            binding.etScore.setVisibility(
+                    format == AssessmentModel.Format.SCORE || format == AssessmentModel.Format.BOTH
+                            ? View.VISIBLE : View.GONE);
 
+            // --- Remove old listener before rebinding ---
+            if (scoreWatcher != null) {
+                binding.etScore.removeTextChangedListener(scoreWatcher);
+            }
 
-            // Configure visibility based on format
-            binding.cbPassed.setVisibility(format == AssessmentModel.Format.CHECKBOX || format == AssessmentModel.Format.BOTH ? View.VISIBLE : View.GONE);
-            binding.etScore.setVisibility(format == AssessmentModel.Format.SCORE || format == AssessmentModel.Format.BOTH ? View.VISIBLE : View.GONE);
+            // --- Restore saved values ---
+            binding.cbPassed.setOnCheckedChangeListener(null); // prevent unwanted triggers
+            binding.cbPassed.setChecked(result.isPassed());
+            binding.etScore.setText(String.valueOf(result.getScore()));
 
-            // Set initial values
-            binding.cbPassed.setChecked(currentResult.isPassed());
-            binding.etScore.setText(String.valueOf(currentResult.getScore()));
-
-            // Remove existing listeners to prevent loops
-            binding.etScore.removeTextChangedListener((TextWatcher) binding.etScore.getTag());
-
-            // Set listeners to update the map
+            // --- Set new listeners ---
             binding.cbPassed.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                currentResult.setPassed(isChecked);
+                result.setPassed(isChecked);
+                resultsMap.put(student.getId(), result);
             });
 
-            TextWatcher textWatcher = new TextWatcher() {
+            scoreWatcher = new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
                 @Override public void afterTextChanged(Editable s) {
+                    float score = 0;
                     try {
-                        currentResult.setScore(Float.parseFloat(s.toString()));
-                    } catch (NumberFormatException e) {
-                        currentResult.setScore(0);
-                    }
+                        if (!s.toString().isEmpty()) {
+                            score = Float.parseFloat(s.toString());
+                        }
+                    } catch (NumberFormatException ignored) {}
+                    result.setScore(score);
+                    resultsMap.put(student.getId(), result);
                 }
             };
-            binding.etScore.addTextChangedListener(textWatcher);
-            binding.etScore.setTag(textWatcher);
+            binding.etScore.addTextChangedListener(scoreWatcher);
         }
     }
 }
