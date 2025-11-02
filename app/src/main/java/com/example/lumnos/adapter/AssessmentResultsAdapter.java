@@ -86,7 +86,6 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
             final ResultModel currentResult = resultsMap.computeIfAbsent(student.getId(),
                     k -> new ResultModel(assessmentId, student.getId(), false, 0, 0));
 
-            // Show/hide views based on assessment format
             binding.cbPassed.setVisibility(
                     format == AssessmentModel.Format.CHECKBOX || format == AssessmentModel.Format.BOTH
                             ? View.VISIBLE : View.GONE
@@ -96,21 +95,18 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
                             ? View.VISIBLE : View.GONE
             );
 
-            // Remove old text watcher before adding new
-            if (textWatcher != null) binding.etScore.removeTextChangedListener(textWatcher);
-
-            // Set initial values
+            // Remove previous listener
+            binding.cbPassed.setOnCheckedChangeListener(null);
             binding.cbPassed.setChecked(currentResult.isPassed());
-            binding.etScore.setText(currentResult.getScore() == 0 ? "" : String.valueOf(currentResult.getScore()));
-
-            // Checkbox listener
             binding.cbPassed.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 currentResult.setPassed(isChecked);
                 currentResult.setUpdatedAt(System.currentTimeMillis());
                 autoSave();
             });
 
-            // TextWatcher for score input
+            // Remove old TextWatcher before adding new
+            binding.etScore.removeTextChangedListener(textWatcher);
+            binding.etScore.setText(currentResult.getScore() == 0 ? "" : String.valueOf(currentResult.getScore()));
             textWatcher = new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -127,6 +123,7 @@ public class AssessmentResultsAdapter extends RecyclerView.Adapter<AssessmentRes
             };
             binding.etScore.addTextChangedListener(textWatcher);
         }
+
 
         private void autoSave() {
             prefsManager.saveData("results_" + assessmentId, JsonUtils.toJson(getResults()));

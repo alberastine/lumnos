@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 2,
-      "versionName": "1.1",
-      "outputFile": "Lumnos-v1.1.apk"
+      "versionCode": 3,
+      "versionName": "2.0",
+      "outputFile": "Lumnos-v2.0.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/Lumnos-v1.1.dm"
+        "baselineProfiles/1/Lumnos-v2.0.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/Lumnos-v1.1.dm"
+        "baselineProfiles/0/Lumnos-v2.0.dm"
       ]
     }
   ],
