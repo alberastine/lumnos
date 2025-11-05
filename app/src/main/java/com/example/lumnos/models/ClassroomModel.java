@@ -15,14 +15,17 @@ public class ClassroomModel {
         this.assessmentCount = assessmentCount;
     }
 
-    // Getters and Setters
+    // Getters
     public String getId() { return id; }
     public String getName() { return name; }
     public long getCreatedAt() { return createdAt; }
-
     public int getStudentCount() { return studentCount; }
-    public void setStudentCount(int studentCount) { this.studentCount = studentCount; }
-
     public int getAssessmentCount() { return assessmentCount; }
+
+    // Setters
+    public void setStudentCount(int studentCount) { this.studentCount = studentCount; }
     public void setAssessmentCount(int assessmentCount) { this.assessmentCount = assessmentCount; }
+    public void setName(String name) {
+        this.name = name;
+    }
 }

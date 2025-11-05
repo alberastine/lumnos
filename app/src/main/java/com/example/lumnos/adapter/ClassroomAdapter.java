@@ -17,6 +17,8 @@ public class ClassroomAdapter extends RecyclerView.Adapter<ClassroomAdapter.Clas
 
     public interface OnClassroomClickListener {
         void onClassroomClick(ClassroomModel classroom);
+        void onEditClick(ClassroomModel classroom);
+        void onDeleteClick(ClassroomModel classroom);
     }
 
     public ClassroomAdapter(List<ClassroomModel> classrooms, OnClassroomClickListener listener) {
@@ -56,6 +58,9 @@ public class ClassroomAdapter extends RecyclerView.Adapter<ClassroomAdapter.Clas
             binding.tvAssessmentsCount.setText(classroom.getAssessmentCount() + " assessments");
 
             itemView.setOnClickListener(v -> listener.onClassroomClick(classroom));
+
+            binding.ivEdit.setOnClickListener(v -> listener.onEditClick(classroom));
+            binding.ivDelete.setOnClickListener(v -> listener.onDeleteClick(classroom));
         }
 
     }

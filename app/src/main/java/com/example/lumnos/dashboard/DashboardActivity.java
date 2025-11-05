@@ -6,15 +6,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.lumnos.R;
-import com.example.lumnos.auth.LoginActivity;
 import com.example.lumnos.adapter.ClassroomAdapter;
+import com.example.lumnos.auth.LoginActivity;
 import com.example.lumnos.classroom.AddClassroomActivity;
 import com.example.lumnos.classroom.ClassroomDashboardActivity;
 import com.example.lumnos.classroom.StudentManager;
@@ -64,7 +66,24 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         classroomList = new ArrayList<>();
-        adapter = new ClassroomAdapter(classroomList, this::onClassroomClicked);
+
+        adapter = new ClassroomAdapter(classroomList, new ClassroomAdapter.OnClassroomClickListener() {
+            @Override
+            public void onClassroomClick(ClassroomModel classroom) {
+                onClassroomClicked(classroom);
+            }
+
+            @Override
+            public void onEditClick(ClassroomModel classroom) {
+                showEditClassroomDialog(classroom);
+            }
+
+            @Override
+            public void onDeleteClick(ClassroomModel classroom) {
+                showDeleteClassroomDialog(classroom);
+            }
+        });
+
         binding.rvClassrooms.setLayoutManager(new LinearLayoutManager(this));
         binding.rvClassrooms.setAdapter(adapter);
     }
@@ -76,7 +95,7 @@ public class DashboardActivity extends AppCompatActivity {
             json = "[]";
         }
 
-        Type type = new TypeToken<ArrayList<ClassroomModel>>(){}.getType();
+        Type type = new TypeToken<ArrayList<ClassroomModel>>() {}.getType();
         List<ClassroomModel> loadedClassrooms = JsonUtils.fromJson(json, type);
 
         if (loadedClassrooms != null) {
@@ -86,7 +105,6 @@ public class DashboardActivity extends AppCompatActivity {
             for (ClassroomModel classroom : loadedClassrooms) {
                 int studentCount = getStudentCount(classroom.getId());
                 int assessmentCount = getAssessmentCount(classroom.getId());
-
                 classroom.setStudentCount(studentCount);
                 classroom.setAssessmentCount(assessmentCount);
             }
@@ -94,6 +112,10 @@ public class DashboardActivity extends AppCompatActivity {
             classroomList.addAll(loadedClassrooms);
             adapter.notifyDataSetChanged();
         }
+    }
+
+    private void saveClassrooms() {
+        prefsManager.saveData("classrooms", JsonUtils.toJson(classroomList));
     }
 
     private void onClassroomClicked(ClassroomModel classroom) {
@@ -111,11 +133,80 @@ public class DashboardActivity extends AppCompatActivity {
     private int getAssessmentCount(String classroomId) {
         String key = "assessments_" + classroomId;
         String json = prefsManager.getData(key);
-        Type type = new TypeToken<ArrayList<AssessmentModel>>(){}.getType();
+        Type type = new TypeToken<ArrayList<AssessmentModel>>() {}.getType();
         List<AssessmentModel> assessments = JsonUtils.fromJson(json, type);
         return (assessments != null) ? assessments.size() : 0;
     }
 
+    // ------------------- Dialogs -------------------
+
+    private void showEditClassroomDialog(ClassroomModel classroom) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_item, null);
+        EditText input = dialogView.findViewById(R.id.etItemName);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        title.setText("Edit Classroom");
+
+        input.setText(classroom.getName());
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    .setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                    .setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String newName = input.getText().toString().trim();
+                if (!newName.isEmpty()) {
+                    classroom.setName(newName);
+                    saveClassrooms();
+                    loadClassrooms();
+                    dialog.dismiss();
+                } else {
+                    input.setError("Classroom name cannot be empty");
+                }
+            });
+        });
+
+        dialog.show();
+    }
+
+    private void showDeleteClassroomDialog(ClassroomModel classroom) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_item, null);
+        TextView title = dialogView.findViewById(R.id.tvDialogTitle);
+        TextView message = dialogView.findViewById(R.id.tvDialogMessage);
+        title.setText("Delete Classroom");
+        message.setText("Are you sure you want to delete this classroom?");
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.WhiteAlertDialog)
+                .setView(dialogView)
+                .setPositiveButton("Delete", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    .setTextColor(getResources().getColor(R.color.blue_600));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                    .setTextColor(getResources().getColor(R.color.black));
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                classroomList.remove(classroom);
+                saveClassrooms();
+                loadClassrooms();
+                dialog.dismiss();
+            });
+        });
+
+        dialog.show();
+    }
+
+    // ------------------- Logout Menu -------------------
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -127,30 +218,25 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_logout) {
-            // Create the white dialog
             MaterialAlertDialogBuilder builder =
                     new MaterialAlertDialogBuilder(this, R.style.WhiteAlertDialog);
 
             builder.setTitle("")
                     .setMessage("Are you sure you want to logout?")
                     .setPositiveButton("Logout", (dialog, which) -> {
-                        // Remove session only (not clearing all data)
                         prefsManager.removeData("is_logged_in");
                         prefsManager.removeData("logged_in_user");
 
                         Intent intent = new Intent(this, LoginActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        //prefsManager.clearData();
                         startActivity(intent);
                         finish();
                     })
                     .setNegativeButton("Cancel", null);
 
-            // Show the dialog
             AlertDialog dialog = builder.create();
             dialog.show();
 
-            // Set message and button text colors after showing
             TextView message = dialog.findViewById(android.R.id.message);
             if (message != null)
                 message.setTextColor(ContextCompat.getColor(this, R.color.black));
