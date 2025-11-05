@@ -161,7 +161,7 @@ public class AssessmentDetailActivity extends AppCompatActivity {
                 for (ClassroomModel c : classrooms) {
                     if (c.getId().equals(assessment.getClassroomId())) {
                         classroomName = c.getName();
-                        studentManager.setClassroomName(classroomName); // cache for next time
+                        studentManager.setClassroomName(classroomName);
                         break;
                     }
                 }
@@ -176,11 +176,19 @@ public class AssessmentDetailActivity extends AppCompatActivity {
         canvas.drawText("Classroom: " + classroomName, 40, y, paint);
         y += 30;
 
+        // ✅ Determine which columns to show based on assessment format
+        AssessmentModel.Format format = assessment.getFormat();
+        boolean showStatus = (format == AssessmentModel.Format.CHECKBOX || format == AssessmentModel.Format.BOTH);
+        boolean showResult = (format == AssessmentModel.Format.SCORE || format == AssessmentModel.Format.BOTH);
+
         // Table header
         paint.setFakeBoldText(true);
+        int statusX = 300;
+        int resultX = showStatus && showResult ? 500 : 300; // adjust layout dynamically
+
         canvas.drawText("Student Name", 40, y, paint);
-        canvas.drawText("Status", 300, y, paint);
-        canvas.drawText("Result", 500, y, paint);
+        if (showStatus) canvas.drawText("Status", statusX, y, paint);
+        if (showResult) canvas.drawText("Result", resultX, y, paint);
         paint.setFakeBoldText(false);
         y += 25;
 
@@ -198,8 +206,8 @@ public class AssessmentDetailActivity extends AppCompatActivity {
             }
 
             canvas.drawText(student.getName(), 40, y, paint);
-            canvas.drawText(status, 300, y, paint);
-            canvas.drawText(result, 500, y, paint);
+            if (showStatus) canvas.drawText(status, statusX, y, paint);
+            if (showResult) canvas.drawText(result, resultX, y, paint);
             y += 25;
 
             // New page if overflow
@@ -220,15 +228,14 @@ public class AssessmentDetailActivity extends AppCompatActivity {
                 assessment.getName().replaceAll("\\s+", "_") + "_Results.pdf";
 
         ContentValues values = new ContentValues();
-        values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
-        values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/pdf");
-        values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, "Download/");
+        values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
+        values.put(MediaStore.Downloads.RELATIVE_PATH, "Download/");
 
         try {
             android.net.Uri uri = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                uri = getContentResolver().insert(
-                        android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
             }
             if (uri != null) {
                 pdfDocument.writeTo(getContentResolver().openOutputStream(uri));
@@ -243,6 +250,7 @@ public class AssessmentDetailActivity extends AppCompatActivity {
             pdfDocument.close();
         }
     }
+
 
 
     @Override
